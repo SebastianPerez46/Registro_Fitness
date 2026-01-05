@@ -175,23 +175,53 @@
     <script>
         // --- 1. CONFIGURACIÓN DE DATOS (Tus ejercicios y rutinas) ---
         // PUEDES EDITAR ESTO:
-        const allExercises = {
-            "p_banca": "Press Banca Plano",
-            "p_inclinado": "Press Inclinado Mancuernas",
-            "aperturas": "Aperturas",
-            "sentadilla": "Sentadilla Barra",
-            "prensa": "Prensa Piernas",
-            "ext_quad": "Extensiones Cuádriceps",
-            "dominadas": "Dominadas",
-            "remo_barra": "Remo con Barra",
-            "curl_bicep": "Curl de Bíceps"
-        };
+       // 1. DICCIONARIO MAESTRO DE EJERCICIOS
+const allExercises = {
+    // PULL (Lunes)
+    "dominadas": "Dominadas (6-10 reps)",
+    "remo_mc": "Remo con mancuerna a una mano",
+    "curl_bicep_barra": "Curl bíceps con barra",
+    "curl_martillo": "Curl martillo con mancuernas",
 
-        const routines = {
-            "Push A": ["p_banca", "p_inclinado", "aperturas"],
-            "Pull A": ["dominadas", "remo_barra", "curl_bicep"],
-            "Legs A": ["sentadilla", "prensa", "ext_quad"]
-        };
+    // PUSH (Miércoles)
+    "flex_arqueras": "Flexiones arqueras o con agarradera",
+    "fondos": "Fondos (Dips)",
+    "flex_pica": "Flexiones pica (Hombro)",
+    "elev_laterales": "Elevaciones laterales con mancuernas",
+    "rompecraneos": "Extensión tríceps (Rompecráneos)",
+
+    // UPPER + CONTROL (Viernes)
+    "dominadas_var": "Dominadas (Agarre distinto)",
+    "flex_declinadas": "Flexiones declinadas o lentas",
+    "pseudo_planche": "Pseudo Planche Push-up",
+    "face_pull": "Face pull improvisado",
+    "elev_piernas": "Elevaciones de piernas (Core)",
+    "plancha_abs": "Plancha (Core - Segundos)",
+
+    // PIERNA (Martes / Jueves)
+    "sentadilla": "Sentadilla (Carga máxima)",
+    "estocadas": "Estocadas / Zancadas",
+    "hiit_youtube": "HIIT Pierna (Sesión YouTube)",
+
+    // MOVILIDAD Y BRAZOS (Sábado)
+    "dead_hang": "Dead Hang (Cuelgue pasivo)",
+    "worlds_greatest": "World's Greatest Stretch",
+    "mov_hombro": "Movilidad de hombro (Palo/Banda)",
+    "hollow_body": "Hollow Body Hold",
+    "plancha_lateral": "Plancha lateral",
+    "bird_dog": "Bird-Dog",
+    "ss_brazos": "Superserie: Curl + Copa Tríceps"
+};
+
+// 2. DEFINICIÓN DE RUTINAS
+const routines = {
+    "Lunes (Pull)": ["dominadas", "remo_mc", "curl_bicep_barra", "curl_martillo"],
+    "Martes (Pierna)": ["sentadilla", "estocadas", "hiit_youtube"],
+    "Miércoles (Push)": ["flex_arqueras", "fondos", "flex_pica", "elev_laterales", "rompecraneos"],
+    "Jueves (Pierna)": ["sentadilla", "estocadas", "hiit_youtube"],
+    "Viernes (Upper/Control)": ["dominadas_var", "flex_declinadas", "pseudo_planche", "face_pull", "elev_piernas", "plancha_abs"],
+    "Sábado (Movilidad/Core)": ["dead_hang", "worlds_greatest", "mov_hombro", "hollow_body", "plancha_lateral", "bird_dog", "ss_brazos"]
+};
         
         const MAX_SETS = 5; // Cantidad de filas a mostrar por ejercicio
 
