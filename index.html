@@ -23,7 +23,6 @@
         }
         h1, h2 { text-align: center; color: #111827; }
         
-        /* BOTONES PRINCIPALES */
         .controls {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
@@ -55,7 +54,6 @@
             margin-top: 10px;
         }
 
-        /* TARJETAS DE EJERCICIO */
         .exercise-card {
             background-color: var(--card);
             border: 1px solid var(--border);
@@ -76,7 +74,6 @@
             color: var(--primary);
         }
         
-        /* DATA PREVIA */
         .prev-data {
             background-color: #eff6ff;
             border-left: 4px solid var(--primary);
@@ -95,7 +92,6 @@
             margin-bottom: 2px;
         }
 
-        /* GRID DE SERIES (INPUTS) */
         .sets-container {
             display: flex;
             flex-direction: column;
@@ -103,7 +99,7 @@
         }
         .set-row {
             display: grid;
-            grid-template-columns: 30px 1fr 1fr; /* #Num | Reps | Peso */
+            grid-template-columns: 30px 1fr 1fr; 
             gap: 10px;
             align-items: center;
         }
@@ -117,11 +113,10 @@
             border: 1px solid #d1d5db;
             border-radius: 6px;
             text-align: center;
-            font-size: 16px; /* Evita zoom en iPhone */
+            font-size: 16px; 
         }
         input::placeholder { color: #9ca3af; font-size: 0.8em; }
 
-        /* HISTORIAL */
         #history-log { margin-top: 40px; border-top: 2px solid #ddd; padding-top: 20px; }
         details {
             background: white;
@@ -135,7 +130,7 @@
             cursor: pointer;
             font-weight: bold;
             background-color: #f9fafb;
-            list-style: none; /* Ocultar triángulo default */
+            list-style: none; 
             display: flex;
             justify-content: space-between;
         }
@@ -173,59 +168,44 @@
     </div>
 
     <script>
-        // --- 1. CONFIGURACIÓN DE DATOS (Tus ejercicios y rutinas) ---
-        // PUEDES EDITAR ESTO:
-       // 1. DICCIONARIO MAESTRO DE EJERCICIOS
-const allExercises = {
-    // PULL (Lunes)
-    "dominadas": "Dominadas (6-10 reps)",
-    "remo_mc": "Remo con mancuerna a una mano",
-    "curl_bicep_barra": "Curl bíceps con barra",
-    "curl_martillo": "Curl martillo con mancuernas",
+        const allExercises = {
+            "dominadas": "Dominadas (6-10 reps)",
+            "remo_mc": "Remo con mancuerna a una mano",
+            "curl_bicep_barra": "Curl bíceps con barra",
+            "curl_martillo": "Curl martillo con mancuernas",
+            "flex_arqueras": "Flexiones arqueras o con agarradera",
+            "fondos": "Fondos (Dips)",
+            "flex_pica": "Flexiones pica (Hombro)",
+            "elev_laterales": "Elevaciones laterales con mancuernas",
+            "rompecraneos": "Extensión tríceps (Rompecráneos)",
+            "dominadas_var": "Dominadas (Agarre distinto)",
+            "flex_declinadas": "Flexiones declinadas o lentas",
+            "pseudo_planche": "Pseudo Planche Push-up",
+            "face_pull": "Face pull improvisado",
+            "elev_piernas": "Elevaciones de piernas (Core)",
+            "plancha_abs": "Plancha (Core - Segundos)",
+            "sentadilla": "Sentadilla (Carga máxima)",
+            "estocadas": "Estocadas / Zancadas",
+            "hiit_youtube": "HIIT Pierna (Sesión YouTube)",
+            "dead_hang": "Dead Hang (Cuelgue pasivo)",
+            "worlds_greatest": "World's Greatest Stretch",
+            "mov_hombro": "Movilidad de hombro (Palo/Banda)",
+            "hollow_body": "Hollow Body Hold",
+            "plancha_lateral": "Plancha lateral",
+            "bird_dog": "Bird-Dog",
+            "ss_brazos": "Superserie: Curl + Copa Tríceps"
+        };
 
-    // PUSH (Miércoles)
-    "flex_arqueras": "Flexiones arqueras o con agarradera",
-    "fondos": "Fondos (Dips)",
-    "flex_pica": "Flexiones pica (Hombro)",
-    "elev_laterales": "Elevaciones laterales con mancuernas",
-    "rompecraneos": "Extensión tríceps (Rompecráneos)",
-
-    // UPPER + CONTROL (Viernes)
-    "dominadas_var": "Dominadas (Agarre distinto)",
-    "flex_declinadas": "Flexiones declinadas o lentas",
-    "pseudo_planche": "Pseudo Planche Push-up",
-    "face_pull": "Face pull improvisado",
-    "elev_piernas": "Elevaciones de piernas (Core)",
-    "plancha_abs": "Plancha (Core - Segundos)",
-
-    // PIERNA (Martes / Jueves)
-    "sentadilla": "Sentadilla (Carga máxima)",
-    "estocadas": "Estocadas / Zancadas",
-    "hiit_youtube": "HIIT Pierna (Sesión YouTube)",
-
-    // MOVILIDAD Y BRAZOS (Sábado)
-    "dead_hang": "Dead Hang (Cuelgue pasivo)",
-    "worlds_greatest": "World's Greatest Stretch",
-    "mov_hombro": "Movilidad de hombro (Palo/Banda)",
-    "hollow_body": "Hollow Body Hold",
-    "plancha_lateral": "Plancha lateral",
-    "bird_dog": "Bird-Dog",
-    "ss_brazos": "Superserie: Curl + Copa Tríceps"
-};
-
-// 2. DEFINICIÓN DE RUTINAS
-const routines = {
-    "Lunes (Pull)": ["dominadas", "remo_mc", "curl_bicep_barra", "curl_martillo"],
-    "Martes (Pierna)": ["sentadilla", "estocadas", "hiit_youtube"],
-    "Miércoles (Push)": ["flex_arqueras", "fondos", "flex_pica", "elev_laterales", "rompecraneos"],
-    "Jueves (Pierna)": ["sentadilla", "estocadas", "hiit_youtube"],
-    "Viernes (Upper/Control)": ["dominadas_var", "flex_declinadas", "pseudo_planche", "face_pull", "elev_piernas", "plancha_abs"],
-    "Sábado (Movilidad/Core)": ["dead_hang", "worlds_greatest", "mov_hombro", "hollow_body", "plancha_lateral", "bird_dog", "ss_brazos"]
-};
+        const routines = {
+            "Lunes (Pull)": ["dominadas", "remo_mc", "curl_bicep_barra", "curl_martillo"],
+            "Martes (Pierna)": ["sentadilla", "estocadas", "hiit_youtube"],
+            "Miércoles (Push)": ["flex_arqueras", "fondos", "flex_pica", "elev_laterales", "rompecraneos"],
+            "Jueves (Pierna)": ["sentadilla", "estocadas", "hiit_youtube"],
+            "Viernes (Upper/Control)": ["dominadas_var", "flex_declinadas", "pseudo_planche", "face_pull", "elev_piernas", "plancha_abs"],
+            "Sábado (Movilidad/Core)": ["dead_hang", "worlds_greatest", "mov_hombro", "hollow_body", "plancha_lateral", "bird_dog", "ss_brazos"]
+        };
         
-        const MAX_SETS = 5; // Cantidad de filas a mostrar por ejercicio
-
-        // --- 2. INICIALIZACIÓN ---
+        const MAX_SETS = 5; 
         let currentRoutineName = null;
 
         window.onload = function() {
@@ -245,7 +225,6 @@ const routines = {
             }
         }
 
-        // --- 3. CARGAR RUTINA Y MOSTRAR INPUTS ---
         function loadRoutine(name) {
             currentRoutineName = name;
             document.getElementById('routine-selector').style.display = 'none';
@@ -256,10 +235,7 @@ const routines = {
             list.innerHTML = '';
 
             routines[name].forEach(exID => {
-                // Buscar historial previo de este ejercicio en esta rutina
                 const lastData = getLastLogForExercise(name, exID);
-                
-                // Generar HTML de la "Data Previa"
                 let prevHtml = "Sin registro anterior";
                 if(lastData && lastData.sets.length > 0) {
                     prevHtml = lastData.sets.map((s, i) => 
@@ -267,19 +243,17 @@ const routines = {
                     ).join("");
                 }
 
-                // Generar las 5 filas de inputs
                 let inputsHtml = '';
                 for(let i=1; i<=MAX_SETS; i++) {
                     inputsHtml += `
                         <div class="set-row">
                             <span class="set-num">${i}</span>
-                            <input type="number" class="inp-reps" data-set="${i}" placeholder="Reps">
-                            <input type="number" class="inp-weight" data-set="${i}" placeholder="Kg/Lbs">
+                            <input type="text" class="inp-reps" data-set="${i}" placeholder="Reps">
+                            <input type="text" class="inp-weight" data-set="${i}" placeholder="Peso/Nota">
                         </div>
                     `;
                 }
 
-                // Armar tarjeta completa
                 const card = document.createElement('div');
                 card.className = 'exercise-card';
                 card.dataset.exId = exID;
@@ -299,7 +273,6 @@ const routines = {
             });
         }
 
-        // --- 4. BASE DE DATOS LOCAL ---
         function getHistory() {
             const data = localStorage.getItem('gym_tracker_v2');
             return data ? JSON.parse(data) : [];
@@ -307,21 +280,16 @@ const routines = {
 
         function getLastLogForExercise(routineName, exId) {
             const history = getHistory();
-            // Buscamos de atrás hacia adelante (del más reciente al más viejo)
             for (let i = history.length - 1; i >= 0; i--) {
                 const session = history[i];
-                // Debe coincidir la rutina (opcional, si quieres comparar el ejercicio independientemente de la rutina, quita esta condición)
                 if (session.routine === routineName) {
                     const exerciseData = session.details.find(e => e.id === exId);
-                    if (exerciseData) {
-                        return exerciseData; // Retorna objeto { id, sets: [{reps, weight}, ...] }
-                    }
+                    if (exerciseData) return exerciseData;
                 }
             }
             return null;
         }
 
-        // --- 5. GUARDAR ---
         function saveWorkout() {
             const cards = document.querySelectorAll('.exercise-card');
             const sessionDetails = [];
@@ -330,8 +298,6 @@ const routines = {
             cards.forEach(card => {
                 const exId = card.dataset.exId;
                 const performedSets = [];
-                
-                // Recorrer las filas de inputs dentro de esta tarjeta
                 const repsInputs = card.querySelectorAll('.inp-reps');
                 const weightInputs = card.querySelectorAll('.inp-weight');
 
@@ -339,11 +305,10 @@ const routines = {
                     const repsVal = repInput.value;
                     const weightVal = weightInputs[index].value;
 
-                    // Guardamos la serie solo si se puso al menos Reps
-                    if(repsVal) {
+                    if(repsVal.trim() !== "") {
                         performedSets.push({
                             reps: repsVal,
-                            weight: weightVal || 0 // Si no pone peso, guardamos 0
+                            weight: weightVal || "-" 
                         });
                         someDataEntered = true;
                     }
@@ -392,9 +357,8 @@ const routines = {
             }
         }
 
-        // --- 6. RENDERIZAR HISTORIAL DETALLADO ---
         function renderHistoryLog() {
-            const history = getHistory().reverse(); // Mostrar lo más nuevo arriba
+            const history = getHistory().reverse(); 
             const container = document.getElementById('log-display');
             container.innerHTML = '';
 
@@ -404,23 +368,17 @@ const routines = {
             }
 
             history.forEach(session => {
-                // Crear el elemento <details>
                 const details = document.createElement('details');
-                
-                // Resumen visible (Header)
                 const summary = document.createElement('summary');
                 summary.innerText = `${session.date} - ${session.routine}`;
                 
-                // Contenido oculto (Detalle de ejercicios)
                 const content = document.createElement('div');
                 content.className = 'history-content';
 
                 session.details.forEach(ex => {
                     const exName = allExercises[ex.id] || ex.id;
-                    
-                    // Formatear las series en texto: "10x50kg, 8x50kg..."
                     const setsText = ex.sets.map((s, i) => 
-                        `S${i+1}: <strong>${s.reps}</strong>x${s.weight}kg`
+                        `S${i+1}: <strong>${s.reps}</strong> x ${s.weight}`
                     ).join(" | ");
 
                     const exDiv = document.createElement('div');
