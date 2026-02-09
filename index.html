@@ -2,398 +2,572 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tracker Pro - Sobrecarga Progresiva</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tracker V4 - Control Total</title>
     <style>
-        :root {
-            --primary: #2563eb;
-            --bg: #f3f4f6;
-            --card: #ffffff;
-            --text: #1f2937;
-            --border: #e5e7eb;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 15px;
-            padding-bottom: 50px;
-        }
-        h1, h2 { text-align: center; color: #111827; }
+        :root { --primary: #2563eb; --danger: #ef4444; --success: #10b981; --warning: #f59e0b; --bg: #f8fafc; --card: #ffffff; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 0; padding-bottom: 90px; color: #334155; }
         
-        .controls {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 10px;
-            margin-bottom: 20px;
+        /* NAVEGACIÓN */
+        .nav-bar {
+            position: fixed; bottom: 0; width: 100%; background: white; border-top: 1px solid #e2e8f0;
+            display: flex; justify-content: space-around; padding: 12px 0; z-index: 100; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
         }
-        button {
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: transform 0.1s;
-        }
-        button:active { transform: scale(0.98); }
-        .btn-routine { background-color: var(--primary); color: white; }
-        .btn-save { 
-            background-color: #059669; 
-            color: white; 
-            width: 100%; 
-            font-size: 1.1em;
-            margin-top: 20px;
-            padding: 15px;
-        }
-        .btn-cancel {
-            background-color: #ef4444;
-            color: white;
-            width: 100%;
-            margin-top: 10px;
-        }
+        .nav-btn { background: none; border: none; font-size: 0.75em; color: #94a3b8; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .nav-btn.active { color: var(--primary); font-weight: bold; }
+        .nav-icon { font-size: 1.4em; margin-bottom: 3px; }
 
-        .exercise-card {
-            background-color: var(--card);
-            border: 1px solid var(--border);
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .exercise-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .exercise-title {
-            font-size: 1.1em;
-            font-weight: 700;
-            color: var(--primary);
-        }
+        /* CONTENEDORES */
+        .section { display: none; padding: 20px; max-width: 600px; margin: 0 auto; animation: fadeIn 0.3s; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
-        .prev-data {
-            background-color: #eff6ff;
-            border-left: 4px solid var(--primary);
-            padding: 8px;
-            font-size: 0.85em;
-            color: #4b5563;
-            margin-bottom: 10px;
-            border-radius: 4px;
-        }
-        .prev-set-tag {
-            display: inline-block;
-            background: #dbeafe;
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-right: 5px;
-            margin-bottom: 2px;
-        }
-
-        .sets-container {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .set-row {
-            display: grid;
-            grid-template-columns: 30px 1fr 1fr; 
-            gap: 10px;
-            align-items: center;
-        }
-        .set-num {
-            font-weight: bold;
-            color: #9ca3af;
-            text-align: center;
-        }
-        input {
-            padding: 8px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            text-align: center;
-            font-size: 16px; 
-        }
-        input::placeholder { color: #9ca3af; font-size: 0.8em; }
-
-        #history-log { margin-top: 40px; border-top: 2px solid #ddd; padding-top: 20px; }
-        details {
-            background: white;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            overflow: hidden;
-        }
-        summary {
-            padding: 12px;
-            cursor: pointer;
-            font-weight: bold;
-            background-color: #f9fafb;
-            list-style: none; 
-            display: flex;
-            justify-content: space-between;
-        }
-        summary::after { content: '+'; font-weight: bold; }
-        details[open] summary::after { content: '-'; }
+        h1, h2, h3 { color: #0f172a; margin-top: 0; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 5px 0 15px 0; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
         
-        .history-content { padding: 15px; border-top: 1px solid #eee; }
-        .history-ex-item { margin-bottom: 10px; border-bottom: 1px dashed #eee; padding-bottom: 5px; }
-        .history-ex-name { font-weight: bold; color: var(--primary); font-size: 0.9em; }
-        .history-set-list { font-size: 0.85em; color: #555; margin-top: 2px; }
+        /* BOTONES */
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; margin-top: 5px; font-size: 1rem; }
+        .btn-primary { background: var(--primary); }
+        .btn-success { background: var(--success); }
+        .btn-danger { background: var(--danger); }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-sm { width: auto; padding: 6px 12px; font-size: 0.85em; margin-top:0; }
+        .flex-btns { display: flex; gap: 5px; margin-top: 10px; }
 
-        #active-routine-area { display: none; }
+        /* TARJETAS */
+        .card { background: var(--card); padding: 15px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 15px; border: 1px solid #e2e8f0; }
+        .tag { display: inline-block; background: #e0f2fe; color: #0369a1; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: 600; }
+
+        /* LISTAS DE EDICIÓN */
+        .item-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding: 10px 0; }
+        .item-row:last-child { border-bottom: none; }
+        
+        /* WORKOUT MODE */
+        .workout-row { display: grid; grid-template-columns: 30px 1fr 1fr; gap: 8px; margin-bottom: 8px; align-items: center; }
+        .set-idx { text-align: center; font-weight: bold; color: #cbd5e1; }
+        .inp-log { text-align: center; background: #f8fafc; }
+        .image-preview { max-width: 100%; height: auto; border-radius: 8px; margin-top: 8px; display: block; }
     </style>
 </head>
 <body>
 
-    <h1>💪 Tracker Pro</h1>
+    <div id="sec-workout" class="section active">
+        <h1>🏋️ Entrenar</h1>
+        
+        <div id="view-selector">
+            <p style="color:#64748b; font-size:0.9em;">Selecciona una rutina para comenzar hoy:</p>
+            <div id="routine-list-container"></div>
+        </div>
 
-    <div id="routine-selector">
-        <h3 style="text-align:center; color:#666">Selecciona Rutina</h3>
-        <div class="controls" id="buttons-container"></div>
+        <div id="view-active" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 id="active-routine-name" style="margin:0;">...</h2>
+                <button onclick="closeWorkout()" style="background:#fee2e2; border:none; color:#ef4444; width:40px; height:40px; border-radius:50%; font-size:1.5em; cursor:pointer;">&times;</button>
+            </div>
+            <div id="active-exercise-list"></div>
+            <button class="btn btn-success" onclick="finishWorkout()" style="margin-top:20px; padding: 15px;">✅ Terminar Entrenamiento</button>
+        </div>
+        
+        <div style="margin-top: 40px; border-top: 2px solid #e2e8f0; padding-top:20px;">
+            <h3>Historial Reciente</h3>
+            <div id="history-log"></div>
+            <button onclick="clearHistory()" style="margin-top:10px; color:#ef4444; background:none; border:none; text-decoration:underline; cursor:pointer;">Borrar historial completo</button>
+        </div>
     </div>
 
-    <div id="active-routine-area">
-        <h2 id="current-routine-title">...</h2>
-        <div id="exercise-list"></div>
-        <button class="btn-save" onclick="saveWorkout()">TERMINAR Y GUARDAR</button>
-        <button class="button btn-cancel" onclick="cancelWorkout()">Cancelar</button>
+    <div id="sec-exercises" class="section">
+        <h1>📚 Biblioteca</h1>
+        
+        <div class="card" style="border: 1px solid #bfdbfe; background:#eff6ff;">
+            <h3 id="ex-form-title">Crear Nuevo Ejercicio</h3>
+            <input type="hidden" id="edit-ex-id"> <label style="font-size:0.8em; font-weight:bold;">Nombre</label>
+            <input type="text" id="new-ex-name" placeholder="Ej: Press Militar">
+            
+            <label style="font-size:0.8em; font-weight:bold;">Grupo Muscular</label>
+            <select id="new-ex-muscle">
+                <option value="Pecho">Pecho</option>
+                <option value="Espalda">Espalda</option>
+                <option value="Pierna">Pierna</option>
+                <option value="Hombro">Hombro</option>
+                <option value="Bíceps">Bíceps</option>
+                <option value="Tríceps">Tríceps</option>
+                <option value="Abdomen">Abdomen</option>
+                <option value="Cardio">Cardio</option>
+                <option value="Otro">Otro</option>
+            </select>
+            
+            <label style="font-size:0.8em; font-weight:bold;">Imagen (URL Opcional)</label>
+            <input type="text" id="new-ex-img" placeholder="https://...">
+            
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-primary" id="btn-save-ex" onclick="saveExercise()">Guardar</button>
+                <button class="btn btn-danger" id="btn-cancel-ex" onclick="resetExForm()" style="display:none;">Cancelar</button>
+            </div>
+        </div>
+
+        <h3>Mis Ejercicios</h3>
+        <div id="library-list"></div>
     </div>
 
-    <div id="history-log">
-        <h3>📚 Historial Detallado</h3>
-        <div id="log-display"></div>
-        <button onclick="clearHistory()" style="margin-top:20px; background:#9ca3af; color:white; font-size:0.8em; padding:5px 10px;">Borrar todo el historial</button>
+    <div id="sec-routines" class="section">
+        <h1 id="routine-page-title">📝 Crear Rutina</h1>
+        
+        <div class="card">
+            <input type="hidden" id="edit-routine-idx"> <label>Nombre de la Rutina</label>
+            <input type="text" id="new-routine-name" placeholder="Ej: Push A">
+            
+            <div style="background:#f1f5f9; padding:10px; border-radius:8px; margin-bottom:15px;">
+                <label style="font-size:0.85em;">Agregar ejercicio a la lista:</label>
+                <select id="routine-ex-select" style="margin-bottom:5px;"></select>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="target-sets" placeholder="Series (Ej: 4)" style="width:40%">
+                    <input type="text" id="target-reps" placeholder="Reps (Ej: 10-12)" style="width:60%">
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="addExerciseToBuilder()">+ Añadir</button>
+            </div>
+
+            <div id="builder-list" style="margin-top: 10px; margin-bottom:20px;"></div>
+
+            <button class="btn btn-success" id="btn-save-routine" onclick="saveRoutine()">💾 Guardar Rutina</button>
+            <button class="btn btn-danger" id="btn-cancel-routine" onclick="resetRoutineForm()" style="display:none; margin-top:10px;">Cancelar Edición</button>
+        </div>
+
+        <h3>Mis Rutinas Guardadas</h3>
+        <div id="saved-routines-list"></div>
+    </div>
+
+    <div class="nav-bar">
+        <button class="nav-btn active" onclick="switchTab('sec-workout', this)">
+            <span class="nav-icon">💪</span> Entrenar
+        </button>
+        <button class="nav-btn" onclick="switchTab('sec-exercises', this)">
+            <span class="nav-icon">📚</span> Ejercicios
+        </button>
+        <button class="nav-btn" onclick="switchTab('sec-routines', this)">
+            <span class="nav-icon">📝</span> Rutinas
+        </button>
     </div>
 
     <script>
-        const allExercises = {
-            "dominadas": "Dominadas (6-10 reps)",
-            "remo_mc": "Remo con mancuerna a una mano",
-            "curl_bicep_barra": "Curl bíceps con barra",
-            "curl_martillo": "Curl martillo con mancuernas",
-            "flex_arqueras": "Flexiones arqueras o con agarradera",
-            "fondos": "Fondos (Dips)",
-            "flex_pica": "Flexiones pica (Hombro)",
-            "elev_laterales": "Elevaciones laterales con mancuernas",
-            "rompecraneos": "Extensión tríceps (Rompecráneos)",
-            "dominadas_var": "Dominadas (Agarre distinto)",
-            "flex_declinadas": "Flexiones declinadas o lentas",
-            "pseudo_planche": "Pseudo Planche Push-up",
-            "face_pull": "Face pull improvisado",
-            "elev_piernas": "Elevaciones de piernas (Core)",
-            "plancha_abs": "Plancha (Core - Segundos)",
-            "sentadilla": "Sentadilla (Carga máxima)",
-            "estocadas": "Estocadas / Zancadas",
-            "hiit_youtube": "HIIT Pierna (Sesión YouTube)",
-            "dead_hang": "Dead Hang (Cuelgue pasivo)",
-            "worlds_greatest": "World's Greatest Stretch",
-            "mov_hombro": "Movilidad de hombro (Palo/Banda)",
-            "hollow_body": "Hollow Body Hold",
-            "plancha_lateral": "Plancha lateral",
-            "bird_dog": "Bird-Dog",
-            "ss_brazos": "Superserie: Curl + Copa Tríceps"
-        };
+        // --- 1. CONFIGURACIÓN Y ESTADO ---
+        let library = JSON.parse(localStorage.getItem('gym_library')) || [];
+        let myRoutines = JSON.parse(localStorage.getItem('gym_routines')) || [];
+        let historyLog = JSON.parse(localStorage.getItem('gym_history')) || [];
 
-        const routines = {
-            "Lunes (Pull)": ["dominadas", "remo_mc", "curl_bicep_barra", "curl_martillo"],
-            "Martes (Pierna)": ["sentadilla", "estocadas", "hiit_youtube"],
-            "Miércoles (Push)": ["flex_arqueras", "fondos", "flex_pica", "elev_laterales", "rompecraneos"],
-            "Jueves (Pierna)": ["sentadilla", "estocadas", "hiit_youtube"],
-            "Viernes (Upper/Control)": ["dominadas_var", "flex_declinadas", "pseudo_planche", "face_pull", "elev_piernas", "plancha_abs"],
-            "Sábado (Movilidad/Core)": ["dead_hang", "worlds_greatest", "mov_hombro", "hollow_body", "plancha_lateral", "bird_dog", "ss_brazos"]
-        };
-        
-        const MAX_SETS = 5; 
-        let currentRoutineName = null;
+        // Estado temporal para construcción
+        let builderExercises = [];
+        let currentActiveRoutine = null;
 
         window.onload = function() {
-            renderRoutineButtons();
-            renderHistoryLog();
+            renderWorkoutHome();
         };
 
-        function renderRoutineButtons() {
-            const container = document.getElementById('buttons-container');
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+            
+            if(tabId === 'sec-exercises') renderLibrary();
+            if(tabId === 'sec-routines') {
+                renderRoutineManager(); 
+                populateExSelect(); // Asegurar que el select esté actualizado
+            }
+            if(tabId === 'sec-workout') renderWorkoutHome();
+        }
+
+        // --- 2. GESTIÓN DE EJERCICIOS (CRUD COMPLETO) ---
+        
+        function saveExercise() {
+            const id = document.getElementById('edit-ex-id').value;
+            const name = document.getElementById('new-ex-name').value;
+            const muscle = document.getElementById('new-ex-muscle').value;
+            const img = document.getElementById('new-ex-img').value;
+
+            if(!name) return alert("El nombre es obligatorio");
+
+            if(id) {
+                // MODO EDICIÓN
+                const index = library.findIndex(e => e.id === id);
+                if(index !== -1) {
+                    library[index] = { id, name, category: muscle, img };
+                    alert("Ejercicio actualizado");
+                }
+            } else {
+                // MODO CREACIÓN
+                const newEx = {
+                    id: 'ex_' + Date.now(),
+                    name: name,
+                    category: muscle,
+                    img: img
+                };
+                library.push(newEx);
+                alert("Ejercicio creado");
+            }
+
+            localStorage.setItem('gym_library', JSON.stringify(library));
+            resetExForm();
+            renderLibrary();
+        }
+
+        function editExercise(id) {
+            const ex = library.find(e => e.id === id);
+            if(!ex) return;
+
+            document.getElementById('edit-ex-id').value = ex.id;
+            document.getElementById('new-ex-name').value = ex.name;
+            document.getElementById('new-ex-muscle').value = ex.category;
+            document.getElementById('new-ex-img').value = ex.img || "";
+
+            // Cambiar interfaz a modo edición
+            document.getElementById('ex-form-title').innerText = "Editar Ejercicio";
+            document.getElementById('btn-save-ex').innerText = "Actualizar";
+            document.getElementById('btn-save-ex').className = "btn btn-warning";
+            document.getElementById('btn-cancel-ex').style.display = "inline-block";
+            
+            window.scrollTo(0,0);
+        }
+
+        function deleteExercise(id) {
+            if(!confirm("¿Borrar este ejercicio? Si está en alguna rutina, podría desaparecer de ella.")) return;
+            library = library.filter(e => e.id !== id);
+            localStorage.setItem('gym_library', JSON.stringify(library));
+            renderLibrary();
+        }
+
+        function resetExForm() {
+            document.getElementById('edit-ex-id').value = "";
+            document.getElementById('new-ex-name').value = "";
+            document.getElementById('new-ex-img').value = "";
+            
+            document.getElementById('ex-form-title').innerText = "Crear Nuevo Ejercicio";
+            document.getElementById('btn-save-ex').innerText = "Guardar";
+            document.getElementById('btn-save-ex').className = "btn btn-primary";
+            document.getElementById('btn-cancel-ex').style.display = "none";
+        }
+
+        function renderLibrary() {
+            const list = document.getElementById('library-list');
+            list.innerHTML = '';
+            if(library.length === 0) list.innerHTML = '<p>No hay ejercicios creados.</p>';
+            
+            library.forEach(ex => {
+                const hasImg = ex.img ? '📷' : '';
+                list.innerHTML += `
+                    <div class="card item-row" style="padding:15px; display:block;">
+                        <div style="display:flex; justify-content:space-between;">
+                            <div>
+                                <strong>${ex.name}</strong> <span class="tag">${ex.category}</span> ${hasImg}
+                            </div>
+                        </div>
+                        <div class="flex-btns">
+                            <button class="btn btn-warning btn-sm" onclick="editExercise('${ex.id}')">Editar</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteExercise('${ex.id}')">Borrar</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // --- 3. GESTIÓN DE RUTINAS (CRUD) ---
+
+        function populateExSelect() {
+            const select = document.getElementById('routine-ex-select');
+            select.innerHTML = '';
+            library.forEach(ex => {
+                const opt = document.createElement('option');
+                opt.value = ex.id;
+                opt.text = ex.name;
+                select.appendChild(opt);
+            });
+        }
+
+        function addExerciseToBuilder() {
+            const select = document.getElementById('routine-ex-select');
+            if(select.selectedIndex === -1) return alert("Crea ejercicios primero en la pestaña Biblioteca");
+            
+            const exId = select.value;
+            const exName = select.options[select.selectedIndex].text;
+            const sets = document.getElementById('target-sets').value || "3";
+            const reps = document.getElementById('target-reps').value || "10";
+
+            builderExercises.push({ id: exId, name: exName, targetSets: sets, targetReps: reps });
+            renderBuilderList();
+        }
+
+        function renderBuilderList() {
+            const container = document.getElementById('builder-list');
             container.innerHTML = '';
-            for (const key of Object.keys(routines)) {
-                const btn = document.createElement('button');
-                btn.className = 'btn-routine';
-                btn.innerText = key;
-                btn.onclick = () => loadRoutine(key);
-                container.appendChild(btn);
+            builderExercises.forEach((item, index) => {
+                container.innerHTML += `
+                    <div style="background:white; border:1px solid #ddd; padding:8px; border-radius:6px; margin-bottom:5px; display:flex; justify-content:space-between; align-items:center;">
+                        <span>${item.name} <small>(${item.targetSets} x ${item.targetReps})</small></span>
+                        <button onclick="removeBuilderItem(${index})" style="color:red; border:none; background:none; font-weight:bold;">X</button>
+                    </div>
+                `;
+            });
+        }
+
+        function removeBuilderItem(index) {
+            builderExercises.splice(index, 1);
+            renderBuilderList();
+        }
+
+        function saveRoutine() {
+            const name = document.getElementById('new-routine-name').value;
+            const editIdx = document.getElementById('edit-routine-idx').value;
+
+            if(!name || builderExercises.length === 0) return alert("Falta nombre o ejercicios");
+
+            const routineData = {
+                id: editIdx ? myRoutines[editIdx].id : 'rt_' + Date.now(),
+                name: name,
+                exercises: [...builderExercises]
+            };
+
+            if(editIdx) {
+                // ACTUALIZAR
+                myRoutines[editIdx] = routineData;
+                alert("Rutina actualizada correctamente");
+            } else {
+                // CREAR NUEVA
+                myRoutines.push(routineData);
+                alert("Nueva rutina guardada");
+            }
+
+            localStorage.setItem('gym_routines', JSON.stringify(myRoutines));
+            resetRoutineForm();
+            renderRoutineManager();
+        }
+
+        function loadRoutineForEdit(index) {
+            // Cargar datos en el formulario
+            const r = myRoutines[index];
+            document.getElementById('new-routine-name').value = r.name;
+            document.getElementById('edit-routine-idx').value = index;
+            
+            // Cargar ejercicios en el builder
+            builderExercises = [...r.exercises];
+            
+            // Cambiar UI
+            document.getElementById('routine-page-title').innerText = "Editar Rutina";
+            document.getElementById('btn-save-routine').innerText = "Guardar Cambios";
+            document.getElementById('btn-cancel-routine').style.display = "block";
+            
+            renderBuilderList();
+            populateExSelect(); // Asegurar lista
+            
+            // Scroll arriba
+            window.scrollTo(0,0);
+        }
+
+        function deleteRoutine(index) {
+            if(confirm("¿Eliminar esta rutina permanentemente?")) {
+                myRoutines.splice(index, 1);
+                localStorage.setItem('gym_routines', JSON.stringify(myRoutines));
+                renderRoutineManager();
             }
         }
 
-        function loadRoutine(name) {
-            currentRoutineName = name;
-            document.getElementById('routine-selector').style.display = 'none';
-            document.getElementById('active-routine-area').style.display = 'block';
-            document.getElementById('current-routine-title').innerText = name;
+        function resetRoutineForm() {
+            document.getElementById('new-routine-name').value = '';
+            document.getElementById('edit-routine-idx').value = '';
+            builderExercises = [];
+            renderBuilderList();
+            
+            document.getElementById('routine-page-title').innerText = "Crear Rutina";
+            document.getElementById('btn-save-routine').innerText = "💾 Guardar Rutina";
+            document.getElementById('btn-cancel-routine').style.display = "none";
+        }
 
-            const list = document.getElementById('exercise-list');
+        function renderRoutineManager() {
+            const list = document.getElementById('saved-routines-list');
+            list.innerHTML = '';
+            
+            if(myRoutines.length === 0) list.innerHTML = "<p>No tienes rutinas.</p>";
+
+            myRoutines.forEach((r, idx) => {
+                list.innerHTML += `
+                    <div class="card">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <strong>${r.name}</strong><br>
+                                <small>${r.exercises.length} Ejercicios</small>
+                            </div>
+                        </div>
+                        <div class="flex-btns">
+                            <button class="btn btn-warning btn-sm" onclick="loadRoutineForEdit(${idx})">Modificar</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteRoutine(${idx})">Eliminar</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // --- 4. ENTRENAMIENTO (LÓGICA PRINCIPAL) ---
+
+        function renderWorkoutHome() {
+            const container = document.getElementById('routine-list-container');
+            container.innerHTML = '';
+            
+            if(myRoutines.length === 0) {
+                container.innerHTML = "<p>Ve a 'Rutinas' para crear tu primer plan.</p>";
+                return;
+            }
+
+            myRoutines.forEach(r => {
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-primary';
+                btn.innerText = "▶ " + r.name;
+                btn.style.marginBottom = "10px";
+                btn.style.textAlign = "left";
+                btn.onclick = () => startWorkout(r);
+                container.appendChild(btn);
+            });
+
+            renderHistoryList();
+        }
+
+        function startWorkout(routine) {
+            currentActiveRoutine = routine;
+            document.getElementById('view-selector').style.display = 'none';
+            document.getElementById('view-active').style.display = 'block';
+            document.getElementById('active-routine-name').innerText = routine.name;
+
+            const list = document.getElementById('active-exercise-list');
             list.innerHTML = '';
 
-            routines[name].forEach(exID => {
-                const lastData = getLastLogForExercise(name, exID);
-                let prevHtml = "Sin registro anterior";
-                if(lastData && lastData.sets.length > 0) {
-                    prevHtml = lastData.sets.map((s, i) => 
-                        `<span class="prev-set-tag">S${i+1}: <strong>${s.reps}</strong>x<strong>${s.weight}</strong></span>`
-                    ).join("");
+            routine.exercises.forEach(ex => {
+                // Buscar datos actualizados en la biblioteca (por si cambió nombre o foto)
+                const libData = library.find(l => l.id === ex.id) || { name: ex.name, img: '' };
+                const prevLog = getLastLog(ex.id);
+
+                let prevText = "Sin datos previos";
+                if(prevLog) {
+                    prevText = prevLog.sets.map((s,i) => `S${i+1}: ${s.reps}x${s.weight}`).join(" | ");
                 }
 
+                const numSets = parseInt(ex.targetSets) || 3;
                 let inputsHtml = '';
-                for(let i=1; i<=MAX_SETS; i++) {
+                
+                for(let i=0; i<numSets; i++) {
                     inputsHtml += `
-                        <div class="set-row">
-                            <span class="set-num">${i}</span>
-                            <input type="text" class="inp-reps" data-set="${i}" placeholder="Reps">
-                            <input type="text" class="inp-weight" data-set="${i}" placeholder="Peso/Nota">
+                        <div class="workout-row">
+                            <span class="set-idx">${i+1}</span>
+                            <input type="text" class="inp-log inp-reps" placeholder="Reps">
+                            <input type="text" class="inp-log inp-weight" placeholder="Kg/Lbs">
                         </div>
                     `;
                 }
 
                 const card = document.createElement('div');
-                card.className = 'exercise-card';
-                card.dataset.exId = exID;
+                card.className = 'card';
+                card.dataset.exId = ex.id;
+                
+                const imgHtml = libData.img ? `<img src="${libData.img}" class="image-preview">` : '';
+
                 card.innerHTML = `
-                    <div class="exercise-header">
-                        <span class="exercise-title">${allExercises[exID]}</span>
+                    <div style="display:flex; justify-content:space-between;">
+                        <strong style="font-size:1.1em; color:var(--primary);">${libData.name}</strong>
+                        <small style="color:#64748b">Meta: ${ex.targetSets}x${ex.targetReps}</small>
                     </div>
-                    <div class="prev-data">
-                        <small>Anterior:</small><br>
-                        ${prevHtml}
+                    ${imgHtml}
+                    <div style="background:#f0f9ff; padding:8px; font-size:0.85em; margin:10px 0; border-radius:6px; color:#0369a1;">
+                        <strong>Anterior:</strong><br>${prevText}
                     </div>
-                    <div class="sets-container">
+                    <div class="inputs-container">
+                        <div style="display:grid; grid-template-columns:30px 1fr 1fr; font-size:0.7em; color:#64748b; margin-bottom:5px; text-align:center;">
+                            <div>#</div>
+                            <div>REPS</div>
+                            <div>PESO</div>
+                        </div>
                         ${inputsHtml}
                     </div>
                 `;
                 list.appendChild(card);
             });
+            window.scrollTo(0,0);
         }
 
-        function getHistory() {
-            const data = localStorage.getItem('gym_tracker_v2');
-            return data ? JSON.parse(data) : [];
-        }
+        function finishWorkout() {
+            if(!confirm("¿Guardar entrenamiento?")) return;
 
-        function getLastLogForExercise(routineName, exId) {
-            const history = getHistory();
-            for (let i = history.length - 1; i >= 0; i--) {
-                const session = history[i];
-                if (session.routine === routineName) {
-                    const exerciseData = session.details.find(e => e.id === exId);
-                    if (exerciseData) return exerciseData;
+            const cards = document.querySelectorAll('#active-exercise-list .card');
+            const sessionDetails = [];
+            let hasData = false;
+
+            cards.forEach(card => {
+                const exId = card.dataset.exId;
+                const rows = card.querySelectorAll('.workout-row');
+                const setsData = [];
+
+                rows.forEach(row => {
+                    const r = row.querySelector('.inp-reps').value;
+                    const w = row.querySelector('.inp-weight').value;
+                    if(r || w) { 
+                        setsData.push({ reps: r || "-", weight: w || "-" });
+                        hasData = true;
+                    }
+                });
+
+                if(setsData.length > 0) {
+                    sessionDetails.push({ id: exId, sets: setsData });
                 }
+            });
+
+            if(!hasData) return alert("Anota al menos un dato.");
+
+            const newLog = {
+                date: new Date().toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit' }),
+                routineName: currentActiveRoutine.name,
+                details: sessionDetails
+            };
+
+            historyLog.unshift(newLog); 
+            localStorage.setItem('gym_history', JSON.stringify(historyLog));
+            
+            closeWorkout();
+            renderWorkoutHome();
+        }
+
+        function closeWorkout() {
+            document.getElementById('view-selector').style.display = 'block';
+            document.getElementById('view-active').style.display = 'none';
+            currentActiveRoutine = null;
+        }
+
+        function getLastLog(exId) {
+            for(let log of historyLog) {
+                const found = log.details.find(d => d.id === exId);
+                if(found) return found;
             }
             return null;
         }
 
-        function saveWorkout() {
-            const cards = document.querySelectorAll('.exercise-card');
-            const sessionDetails = [];
-            let someDataEntered = false;
-
-            cards.forEach(card => {
-                const exId = card.dataset.exId;
-                const performedSets = [];
-                const repsInputs = card.querySelectorAll('.inp-reps');
-                const weightInputs = card.querySelectorAll('.inp-weight');
-
-                repsInputs.forEach((repInput, index) => {
-                    const repsVal = repInput.value;
-                    const weightVal = weightInputs[index].value;
-
-                    if(repsVal.trim() !== "") {
-                        performedSets.push({
-                            reps: repsVal,
-                            weight: weightVal || "-" 
-                        });
-                        someDataEntered = true;
-                    }
-                });
-
-                if(performedSets.length > 0) {
-                    sessionDetails.push({
-                        id: exId,
-                        sets: performedSets
-                    });
-                }
-            });
-
-            if(!someDataEntered) {
-                alert("No has llenado ningún dato.");
-                return;
-            }
-
-            const newLog = {
-                id: Date.now(),
-                date: new Date().toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' }),
-                timestamp: new Date(),
-                routine: currentRoutineName,
-                details: sessionDetails
-            };
-
-            const history = getHistory();
-            history.push(newLog);
-            localStorage.setItem('gym_tracker_v2', JSON.stringify(history));
-
-            alert("✅ Entrenamiento Guardado");
-            cancelWorkout();
-            renderHistoryLog();
-        }
-
-        function cancelWorkout() {
-            document.getElementById('routine-selector').style.display = 'block';
-            document.getElementById('active-routine-area').style.display = 'none';
-            currentRoutineName = null;
-        }
-
-        function clearHistory() {
-            if(confirm("¿Seguro que quieres borrar TODOS los registros?")) {
-                localStorage.removeItem('gym_tracker_v2');
-                renderHistoryLog();
-            }
-        }
-
-        function renderHistoryLog() {
-            const history = getHistory().reverse(); 
-            const container = document.getElementById('log-display');
+        function renderHistoryList() {
+            const container = document.getElementById('history-log');
             container.innerHTML = '';
-
-            if(history.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#999">No hay registros.</p>';
+            
+            if(historyLog.length === 0) {
+                container.innerHTML = '<small>Sin registros recientes.</small>';
                 return;
             }
 
-            history.forEach(session => {
-                const details = document.createElement('details');
-                const summary = document.createElement('summary');
-                summary.innerText = `${session.date} - ${session.routine}`;
-                
-                const content = document.createElement('div');
-                content.className = 'history-content';
-
-                session.details.forEach(ex => {
-                    const exName = allExercises[ex.id] || ex.id;
-                    const setsText = ex.sets.map((s, i) => 
-                        `S${i+1}: <strong>${s.reps}</strong> x ${s.weight}`
-                    ).join(" | ");
-
-                    const exDiv = document.createElement('div');
-                    exDiv.className = 'history-ex-item';
-                    exDiv.innerHTML = `
-                        <div class="history-ex-name">${exName}</div>
-                        <div class="history-set-list">${setsText}</div>
-                    `;
-                    content.appendChild(exDiv);
-                });
-
-                details.appendChild(summary);
-                details.appendChild(content);
-                container.appendChild(details);
+            historyLog.slice(0, 5).forEach(log => {
+                container.innerHTML += `
+                    <div class="card" style="padding:10px; font-size:0.9em; border-left:4px solid var(--success);">
+                        <strong>${log.date}</strong> <br> ${log.routineName}
+                    </div>
+                `;
             });
+        }
+        
+        function clearHistory() {
+            if(confirm("¡Cuidado! Esto borrará todos tus registros de entrenamientos pasados. ¿Seguro?")) {
+                localStorage.removeItem('gym_history');
+                historyLog = [];
+                renderHistoryList();
+            }
         }
     </script>
 </body>
